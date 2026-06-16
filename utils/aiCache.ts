@@ -1,0 +1,13 @@
+const cache: Record<string, any> = {};
+
+export function getCache(key: string) {
+  return cache[key];
+}
+
+export function setCache(key: string, value: any) {
+  cache[key] = value;
+}
+
+export function clearCache() {
+  Object.keys(cache).forEach((k) => delete cache[k]);
+}
