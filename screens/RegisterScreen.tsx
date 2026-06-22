@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-  Image,
+  View,
 } from "react-native";
 
 import { registerUser } from "../services/auth";
@@ -48,7 +48,7 @@ export default function RegisterScreen({ navigation }: any) {
 
       {/* LOGO PLACE (OPTIONAL) */}
       <Image
-        source={require("../assets/logo.png")}
+        source={require("../assets/Final.png")}
         style={styles.logo}
         resizeMode="contain"
       />
