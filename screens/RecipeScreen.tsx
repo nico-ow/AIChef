@@ -18,9 +18,16 @@ type Message = {
 };
 
 export default function RecipeScreen({ route, navigation }: any) {
+
+  // ✅ FIX: support both "name" and "title"
   const recipe = route?.params?.recipe;
 
-  const cacheKey = recipe?.name || "default";
+  const recipeName =
+    recipe?.name ||
+    recipe?.title ||
+    "Unknown Dish";
+
+  const cacheKey = recipeName;
 
   const [mode, setMode] = useState<"chat" | "cook">("cook");
   const [generatedRecipe, setGeneratedRecipe] = useState("");
@@ -49,25 +56,26 @@ export default function RecipeScreen({ route, navigation }: any) {
     try {
       setLoading(true);
 
+      // ✅ FIX: stronger AI prompt (prevents "undefined dish")
       const prompt = `
-You are an AI Chef.
+You are an expert AI Chef.
 
-Create a cooking guide for: ${recipe.name}
+Create a cooking guide for this dish: "${recipeName}"
 
-Return:
-1. Short summary
-2. Steps
+Return clearly:
+1. Short description
+2. Step-by-step cooking instructions
 3. Tips
 `;
 
-      const res = await askGemini(prompt, recipe.name);
+      const res = await askGemini(prompt, recipeName);
 
       const stepsArray = (res || "")
         .split("\n")
         .map((s: string) => s.trim())
         .filter(Boolean);
 
-      setGeneratedRecipe(res);
+      setGeneratedRecipe(res || "");
       setSteps(stepsArray);
       setCurrentStep(0);
 
@@ -93,19 +101,22 @@ Return:
 
     setMessages((prev) => [...prev, { role: "user", text: userText }]);
 
+    // ✅ FIX: always send real dish name
     const prompt = `
 You are an AI Chef assistant.
 
-Recipe:
-${generatedRecipe || recipe.name}
+Dish: "${recipeName}"
 
-User:
+Context:
+${generatedRecipe}
+
+User question:
 ${userText}
 
-Answer short and helpful.
+Respond clearly and helpful.
 `;
 
-    const res = await askGemini(prompt, recipe.name);
+    const res = await askGemini(prompt, recipeName);
 
     setMessages((prev) => [
       ...prev,
@@ -134,7 +145,7 @@ Answer short and helpful.
         </TouchableOpacity>
 
         <Text style={styles.title} numberOfLines={1}>
-          🍳 {recipe.name}
+          🍳 {recipeName}
         </Text>
       </View>
 
@@ -161,10 +172,9 @@ Answer short and helpful.
 
       {loading && <ActivityIndicator color="#38bdf8" />}
 
-      {/* MAIN AREA */}
+      {/* MAIN */}
       <View style={styles.body}>
 
-        {/* COOK MODE */}
         {mode === "cook" && (
           <View style={styles.cookBox}>
             <Text style={styles.step}>
@@ -177,14 +187,10 @@ Answer short and helpful.
           </View>
         )}
 
-        {/* CHAT MODE (FIXED LAYOUT) */}
         {mode === "chat" && (
           <View style={styles.chatWrapper}>
 
-            <ScrollView
-              style={styles.chatList}
-              contentContainerStyle={{ paddingBottom: 20 }}
-            >
+            <ScrollView style={styles.chatList}>
               {messages.map((m, i) => (
                 <View
                   key={i}
@@ -219,6 +225,9 @@ Answer short and helpful.
     </View>
   );
 }
+
+/* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -233,9 +242,7 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
 
-  header: {
-    marginBottom: 10
-  },
+  header: { marginBottom: 10 },
 
   title: {
     color: "white",
@@ -249,13 +256,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     backgroundColor: "rgba(56,189,248,0.18)",
-    borderRadius: 10
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "rgba(56,189,248,0.6)",
   },
 
-  backText: {
-    color: "#38bdf8",
-    fontWeight: "bold"
-  },
+  backText: { color: "#38bdf8", fontWeight: "bold" },
 
   toggleWrap: {
     flexDirection: "row",
@@ -272,23 +278,13 @@ const styles = StyleSheet.create({
     borderRadius: 20
   },
 
-  pillActive: {
-    backgroundColor: "#38bdf8"
-  },
+  pillActive: { backgroundColor: "#38bdf8" },
 
-  pillText: {
-    color: "#aaa",
-    fontWeight: "600"
-  },
+  pillText: { color: "#aaa", fontWeight: "600" },
 
-  pillActiveText: {
-    color: "#000",
-    fontWeight: "800"
-  },
+  pillActiveText: { color: "#000", fontWeight: "800" },
 
-  body: {
-    flex: 1
-  },
+  body: { flex: 1 },
 
   cookBox: {
     flex: 1,
@@ -309,19 +305,14 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
 
-  nextText: {
-    color: "#000",
-    fontWeight: "800"
-  },
+  nextText: { color: "#000", fontWeight: "800" },
 
   chatWrapper: {
     flex: 1,
-    justifyContent: "space-between" // ⭐ KEY FIX (lifts input UP properly)
+    justifyContent: "space-between"
   },
 
-  chatList: {
-    flex: 1
-  },
+  chatList: { flex: 1 },
 
   bubble: {
     padding: 12,
@@ -345,7 +336,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     paddingVertical: 12,
-    marginBottom: 45 // ⭐ THIS LIFTS CHAT INPUT
+    marginBottom: 45
   },
 
   input: {

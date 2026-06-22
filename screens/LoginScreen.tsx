@@ -4,12 +4,14 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { loginUser } from "../services/auth";
 import { RootStackParamList } from "../types/navigation";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type LoginNav = NativeStackNavigationProp<
   RootStackParamList,
@@ -21,25 +23,63 @@ type Props = {
 };
 
 export default function LoginScreen({
-  navigation
+  navigation,
 }: Props): React.ReactElement {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [loading, setLoading] = React.useState(false);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      alert("Please enter email and password");
+      Alert.alert("Error", "Please enter email and password");
       return;
     }
 
-    const res = await loginUser(email, password);
+    setLoading(true);
 
-    console.log("LOGIN RESULT:", res);
+    try {
+      const formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
 
-    if (res.success) {
-      navigation.replace("Main");
-    } else {
-      alert(res.message);
+      const res = await fetch(
+        "http://192.168.254.110/AIChef/api/login.php",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+
+      console.log("LOGIN RESULT:", data);
+
+      if (data.success) {
+        // 🔐 SAVE AUTH DATA
+        await AsyncStorage.setItem(
+          "user_id",
+          String(data.user.id)
+        );
+
+        await AsyncStorage.setItem(
+          "token",
+          String(data.user.token)
+        );
+
+        await AsyncStorage.setItem(
+          "username",
+          String(data.user.username)
+        );
+
+        navigation.replace("Main");
+      } else {
+        Alert.alert("Login Failed", data.message || "Try again");
+      }
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Network Error", "Please try again later");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,48 +114,51 @@ export default function LoginScreen({
       <TouchableOpacity
         style={styles.button}
         onPress={handleLogin}
+        disabled={loading}
       >
-        <Text style={styles.buttonText}>
-          Login
-        </Text>
+        {loading ? (
+          <ActivityIndicator color="#0b0f14" />
+        ) : (
+          <Text style={styles.buttonText}>Login</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => navigation.navigate("Register")}
       >
-        <Text style={styles.link}>
-          Create account
-        </Text>
+        <Text style={styles.link}>Create account</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+/* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0b0f14",
     justifyContent: "center",
-    padding: 25
+    padding: 25,
   },
 
   logo: {
     fontSize: 60,
     textAlign: "center",
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   title: {
     fontSize: 32,
     color: "white",
     textAlign: "center",
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
 
   subtitle: {
     color: "#94a3b8",
     textAlign: "center",
-    marginBottom: 30
+    marginBottom: 30,
   },
 
   input: {
@@ -124,27 +167,27 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     marginBottom: 12,
-    fontSize: 16
+    fontSize: 16,
   },
 
   button: {
     backgroundColor: "#38bdf8",
     padding: 15,
     borderRadius: 12,
-    marginTop: 5
+    marginTop: 5,
+    alignItems: "center",
   },
 
   buttonText: {
-    textAlign: "center",
     fontWeight: "bold",
     fontSize: 16,
-    color: "#0b0f14"
+    color: "#0b0f14",
   },
 
   link: {
     textAlign: "center",
     color: "#38bdf8",
     marginTop: 20,
-    fontWeight: "600"
-  }
+    fontWeight: "600",
+  },
 });

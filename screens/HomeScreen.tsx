@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -8,23 +8,77 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  StatusBar
+  StatusBar,
+  ActivityIndicator,
+  Animated,
+  Pressable,
 } from "react-native";
 
-import { recipes } from "../data/recipes";
 import { logoutUser } from "../services/auth";
+import { getFavorites, toggleFavorite } from "../services/favorites";
 
 const { width, height } = Dimensions.get("window");
 
 export default function HomeScreen({ navigation }: any) {
+  const [recipes, setRecipes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [saved, setSaved] = useState<number[]>([]);
 
-  const toggleSave = (id: number) => {
-    setSaved((prev) =>
-      prev.includes(id)
-        ? prev.filter((i) => i !== id)
-        : [...prev, id]
-    );
+  const lastTap = useRef(0);
+
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  const showHeart = () => {
+    Animated.sequence([
+      Animated.parallel([
+        Animated.timing(scaleAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.timing(opacityAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      ]),
+      Animated.delay(300),
+      Animated.parallel([
+        Animated.timing(scaleAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(opacityAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+      ]),
+    ]).start();
+  };
+
+  const fetchRecipes = async () => {
+    try {
+      const res = await fetch("http://192.168.254.110/AIChef/api/get_recipes.php");
+      const data = await res.json();
+      setRecipes(data || []);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadFavorites = async () => {
+    const favs = await getFavorites();
+    setSaved((favs || []).map((x: any) => Number(x.id)));
+  };
+
+  useEffect(() => {
+    fetchRecipes();
+    loadFavorites();
+  }, []);
+
+  const handleToggleFavorite = async (item: any) => {
+    const updated = await toggleFavorite(item);
+    setSaved((updated || []).map((x: any) => Number(x.id)));
+  };
+
+  const handleTap = (item: any) => {
+    const now = Date.now();
+
+    if (now - lastTap.current < 300) {
+      handleToggleFavorite(item);
+      showHeart();
+    }
+
+    lastTap.current = now;
   };
 
   const handleLogout = async () => {
@@ -32,67 +86,84 @@ export default function HomeScreen({ navigation }: any) {
     navigation.replace("Login");
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color="#38bdf8" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* LOGOUT BUTTON (SAFE FIXED POSITION) */}
-      <TouchableOpacity style={styles.logout} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
+      {/* HEART POPUP */}
+      <Animated.View
+        style={[
+          styles.heartPopup,
+          {
+            transform: [{ scale: scaleAnim }],
+            opacity: opacityAnim,
+          },
+        ]}
+      >
+        <Text style={{ fontSize: 80 }}>❤️</Text>
+      </Animated.View>
 
-      {/* SWIPE FEED */}
+      {/* TOP BAR */}
+      <View style={styles.topBar}>
+        <TouchableOpacity onPress={() => navigation.navigate("Favorites")}>
+          <Text style={styles.favText}>❤️ Feeds</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* FEED */}
       <FlatList
         data={recipes}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => String(item.id)}
         pagingEnabled
-        showsVerticalScrollIndicator={false}
-        decelerationRate="fast"
         snapToInterval={height}
-        snapToAlignment="start"
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
-          const isSaved = saved.includes(item.id);
+          const isSaved = saved.includes(Number(item.id));
 
           return (
-            <View style={styles.card}>
-              {/* BACKGROUND IMAGE */}
-              <Image source={{ uri: item.image }} style={styles.image} />
+            <Pressable onPress={() => handleTap(item)} style={styles.card}>
+              <Image
+                source={{ uri: `http://192.168.254.110/AIChef/${item.image}` }}
+                style={styles.image}
+              />
+
               <View style={styles.overlay} />
 
-              {/* CONTENT */}
               <View style={styles.content}>
-                <Text style={styles.title}>{item.name}</Text>
-
+                <Text style={styles.title}>{item.title}</Text>
                 <Text style={styles.meta}>
                   ⏱ {item.time} • 🔥 {item.difficulty}
                 </Text>
-
-                <View style={styles.row}>
-                  {/* COOK BUTTON */}
-                  <TouchableOpacity
-                    style={styles.cookBtn}
-                    onPress={() =>
-                      navigation.navigate("Recipe", {
-                        recipe: item,
-                        mode: "cook"
-                      })
-                    }
-                  >
-                    <Text style={styles.cookText}>🍳 Cook Now</Text>
-                  </TouchableOpacity>
-
-                  {/* SAVE BUTTON */}
-                  <TouchableOpacity
-                    onPress={() => toggleSave(item.id)}
-                    style={styles.saveBtn}
-                  >
-                    <Text style={styles.saveText}>
-                      {isSaved ? "❤️" : "🤍"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
               </View>
-            </View>
+
+              <View style={styles.actions}>
+                <TouchableOpacity onPress={() => handleToggleFavorite(item)}>
+                  <Text style={{ fontSize: 26 }}>
+                    {isSaved ? "❤️" : "🤍"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() =>
+                    navigation.navigate("Recipe", { recipe: item, mode: "cook" })
+                  }
+                >
+                  <Text style={{ fontSize: 22 }}>🥗</Text>
+                </TouchableOpacity>
+              </View>
+            </Pressable>
           );
         }}
       />
@@ -101,89 +172,51 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 /* ================= STYLES ================= */
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000"
-  },
+  container: { flex: 1, backgroundColor: "#000" },
+  loading: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" },
 
-  card: {
-    width,
-    height,
-    position: "relative",
-    justifyContent: "flex-end"
-  },
-
-  image: {
-    ...StyleSheet.absoluteFillObject,
+  topBar: {
+    position: "absolute",
+    top: 60, 
     width: "100%",
-    height: "100%"
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    zIndex: 10,
   },
+
+  favText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  logoutText: { color: "#fff", fontWeight: "bold" },
+
+  card: { width, height },
+  image: { width: "100%", height: "100%" },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.55)"
+    backgroundColor: "rgba(0,0,0,0.2)",
   },
 
   content: {
-    paddingHorizontal: 22,
-    paddingBottom: 110
-  },
-
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "white"
-  },
-
-  meta: {
-    color: "#cbd5e1",
-    marginTop: 6,
-    fontSize: 14
-  },
-
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 16,
-    gap: 12
-  },
-
-  cookBtn: {
-    backgroundColor: "#38bdf8",
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    borderRadius: 14
-  },
-
-  cookText: {
-    color: "#000",
-    fontWeight: "bold"
-  },
-
-  saveBtn: {
-    padding: 12
-  },
-
-  saveText: {
-    fontSize: 24
-  },
-
-  logout: {
     position: "absolute",
-    top: 50,
-    right: 15,
-    backgroundColor: "rgba(0,0,0,0.7)",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    zIndex: 100
+    bottom: 120,
+    left: 20,
   },
 
-  logoutText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "bold"
-  }
+  title: { color: "#fff", fontSize: 30, fontWeight: "800" },
+  meta: { color: "#ddd", marginTop: 5 },
+
+  actions: {
+    position: "absolute",
+    right: 20,
+    bottom: 140,
+    gap: 18,
+  },
+
+  heartPopup: {
+    position: "absolute",
+    top: "40%",
+    left: "40%",
+    zIndex: 100,
+  },
 });
