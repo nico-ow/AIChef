@@ -1,3 +1,4 @@
+import { API_URL, BASE_URL } from "../config/api";
 import React, { useEffect, useState, useRef } from "react";
 import {
   View,
@@ -61,13 +62,11 @@ export default function HomeScreen({ navigation }: any) {
 
   const fetchRecipes = async () => {
     try {
-      const res = await fetch(
-        "http://192.168.254.110/AIChef/api/get_recipes.php"
-      );
+      const res = await fetch(`${API_URL}/get_recipes.php`);
       const data = await res.json();
       setRecipes(data || []);
     } catch (err) {
-      console.log(err);
+      console.log("FETCH ERROR:", err);
     } finally {
       setLoading(false);
     }
@@ -116,7 +115,7 @@ export default function HomeScreen({ navigation }: any) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* ❤️ HEART POPUP */}
+      {/* HEART ANIMATION */}
       <Animated.View
         style={[
           styles.heartPopup,
@@ -129,13 +128,10 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={{ fontSize: 80 }}>❤️</Text>
       </Animated.View>
 
-      {/* TOP BAR (UPGRADED BRAND STYLE) */}
+      {/* TOP BAR */}
       <View style={styles.topBar}>
-        
-        {/* BRAND */}
         <Text style={styles.brand}>PIC DISH</Text>
 
-        {/* ACTIONS */}
         <View style={styles.topActions}>
           <TouchableOpacity onPress={() => navigation.navigate("Favorites")}>
             <Text style={styles.favText}>❤️</Text>
@@ -159,9 +155,13 @@ export default function HomeScreen({ navigation }: any) {
 
           return (
             <Pressable onPress={() => handleTap(item)} style={styles.card}>
+              
+              {/* ✅ FIXED IMAGE PATH */}
               <Image
                 source={{
-                  uri: `http://192.168.254.110/AIChef/${item.image}`,
+                  uri: item.image
+                    ? `${BASE_URL}/${item.image}`
+                    : "https://via.placeholder.com/500",
                 }}
                 style={styles.image}
               />
@@ -216,7 +216,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#000",
   },
 
-  /* TOP BAR */
   topBar: {
     position: "absolute",
     top: 60,
@@ -250,7 +249,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
 
-  /* FEED */
   card: {
     width,
     height,

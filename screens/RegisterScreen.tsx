@@ -56,7 +56,7 @@ export default function RegisterScreen({ navigation }: any) {
       <Text style={styles.title}>Create Account</Text>
 
       <Text style={styles.subtitle}>
-        Join AI Chef and start cooking smarter
+        Join PIC DISH and start cooking smarter
       </Text>
 
       {/* INPUTS */}

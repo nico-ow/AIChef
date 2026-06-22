@@ -12,10 +12,10 @@ import {
   TextInput,
   TouchableOpacity
 } from "react-native";
+import { API_URL } from "../config/api";
 
 import * as ImagePicker from "expo-image-picker";
 
-const API_URL = "http://192.168.254.110/AIChef/api";
 
 export default function UploadScreen({ navigation }: any) {
   const [title, setTitle] = useState("");

@@ -1,3 +1,4 @@
+import { API_URL } from "../config/api";
 import React from "react";
 import {
   ActivityIndicator,
@@ -44,7 +45,7 @@ export default function LoginScreen({
       formData.append("password", password);
 
       const res = await fetch(
-        "http://192.168.254.110/AIChef/api/login.php",
+        `${API_URL}/login.php`,
         {
           method: "POST",
           body: formData,

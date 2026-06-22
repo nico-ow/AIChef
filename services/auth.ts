@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../config/api";
 
-const API_URL = "http://192.168.254.110/AIChef/api";
 const SESSION_KEY = "session_user";
 
 /* ================= REGISTER ================= */

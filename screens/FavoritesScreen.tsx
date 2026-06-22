@@ -1,3 +1,4 @@
+import { API_URL, BASE_URL } from "../config/api";
 import React, { useCallback, useState } from "react";
 import {
   View,
@@ -83,7 +84,7 @@ export default function FavoritesScreen({ navigation }: any) {
             <View style={styles.card}>
               <Image
                 source={{
-                  uri: `http://192.168.254.110/AIChef/${item.image}`,
+                  uri: `${BASE_URL}/${item.image}`,
                 }}
                 style={styles.image}
               />
