@@ -1,17 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  ScrollView,
-  Image,
-  Alert,
   ActivityIndicator,
+  Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -30,7 +29,6 @@ export default function UploadScreen({ navigation }: any) {
 
   const [loading, setLoading] = useState(false);
 
-  /* ================= PICK IMAGE ================= */
   const pickImage = async () => {
     const permission =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -54,7 +52,6 @@ export default function UploadScreen({ navigation }: any) {
     }
   };
 
-  /* ================= UPLOAD ================= */
   const handlePost = async () => {
     if (!title || !imageBase64) {
       Alert.alert("Missing data", "Please add title and image");
@@ -101,7 +98,7 @@ export default function UploadScreen({ navigation }: any) {
         Alert.alert("Upload failed", data.message || "Error");
       }
     } catch (err) {
-      console.log("UPLOAD ERROR:", err);
+      console.log(err);
       Alert.alert("Error", "Network error");
     }
 
@@ -114,19 +111,17 @@ export default function UploadScreen({ navigation }: any) {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.header}>🍳 Upload Recipe</Text>
-          <Text style={styles.subHeader}>
-            Share your best dish with the world
-          </Text>
+        <ScrollView contentContainerStyle={styles.scroll}>
 
-          {/* IMAGE PICKER */}
+          <Text style={styles.header}>🍳 Upload Recipe</Text>
+
+          {/* IMAGE */}
           <TouchableOpacity style={styles.imageBox} onPress={pickImage}>
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.image} />
             ) : (
               <Text style={styles.placeholder}>
-                Tap to select an image
+                Tap to select image
               </Text>
             )}
           </TouchableOpacity>
@@ -134,23 +129,23 @@ export default function UploadScreen({ navigation }: any) {
           {/* INPUTS */}
           <TextInput
             placeholder="Recipe Title"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#cbd5e1"
             style={styles.input}
             value={title}
             onChangeText={setTitle}
           />
 
           <TextInput
-            placeholder="Cooking Time (e.g. 30 mins)"
-            placeholderTextColor="#94a3b8"
+            placeholder="Cooking Time"
+            placeholderTextColor="#cbd5e1"
             style={styles.input}
             value={time}
             onChangeText={setTime}
           />
 
           <TextInput
-            placeholder="Difficulty (Easy / Medium / Hard)"
-            placeholderTextColor="#94a3b8"
+            placeholder="Difficulty"
+            placeholderTextColor="#cbd5e1"
             style={styles.input}
             value={difficulty}
             onChangeText={setDifficulty}
@@ -158,7 +153,7 @@ export default function UploadScreen({ navigation }: any) {
 
           <TextInput
             placeholder="Ingredients"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#e2e8f0"
             style={[styles.input, styles.multi]}
             value={ingredients}
             onChangeText={setIngredients}
@@ -167,7 +162,7 @@ export default function UploadScreen({ navigation }: any) {
 
           <TextInput
             placeholder="Instructions"
-            placeholderTextColor="#94a3b8"
+            placeholderTextColor="#e2e8f0"
             style={[styles.input, styles.multi]}
             value={instructions}
             onChangeText={setInstructions}
@@ -181,23 +176,29 @@ export default function UploadScreen({ navigation }: any) {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#0b0f14" />
+              <ActivityIndicator color="#000" />
             ) : (
               <Text style={styles.btnText}>POST RECIPE</Text>
             )}
           </TouchableOpacity>
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-/* ================= STYLES ================= */
+/* ================= FIXED STYLES ================= */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0b0f14",
+  },
+
+  scroll: {
     padding: 20,
+    paddingBottom: 40,
   },
 
   header: {
@@ -205,25 +206,18 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "900",
     textAlign: "center",
-    marginTop: 10,
-  },
-
-  subHeader: {
-    color: "#94a3b8",
-    textAlign: "center",
-    marginBottom: 20,
-    marginTop: 5,
+    marginBottom: 15,
   },
 
   imageBox: {
     height: 200,
-    backgroundColor: "#111827",
+    backgroundColor: "#1f2937",
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 18,
     borderWidth: 1,
-    borderColor: "#1f2937",
+    borderColor: "#334155",
   },
 
   image: {
@@ -233,29 +227,31 @@ const styles = StyleSheet.create({
   },
 
   placeholder: {
-    color: "#64748b",
+    color: "#cbd5e1",
+    fontSize: 15,
   },
 
   input: {
     backgroundColor: "#111827",
-    color: "#fff",
+    color: "#ffffff",   // 🔥 IMPORTANT FIX
     padding: 14,
     borderRadius: 12,
     marginBottom: 12,
-    fontSize: 15,
+    fontSize: 16,
   },
 
   multi: {
-    height: 90,
+    height: 100,
     textAlignVertical: "top",
+    color: "#ffffff", // 🔥 FIX for Android visibility
   },
 
   btn: {
     backgroundColor: "#38bdf8",
     padding: 16,
     borderRadius: 14,
-    marginTop: 10,
     alignItems: "center",
+    marginTop: 10,
   },
 
   btnText: {
