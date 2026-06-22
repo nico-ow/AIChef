@@ -5,7 +5,8 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
-  StyleSheet
+  StyleSheet,
+  SafeAreaView,
 } from "react-native";
 
 export default function RecipeScreen({ route }: any) {
@@ -22,6 +23,8 @@ export default function RecipeScreen({ route }: any) {
     );
   }
 
+  const recipeName = recipe.title || recipe.name;
+
   const sendMessage = () => {
     if (!input.trim()) return;
 
@@ -29,8 +32,10 @@ export default function RecipeScreen({ route }: any) {
 
     const aiMsg = {
       role: "ai",
-      text: `🍳 For "${input}" with ${recipe.name}:
-Try cooking on medium heat and add seasoning for better taste!`
+      text: `🍳 AI Chef Tip for "${input}" using ${recipeName}:
+\n👉 Cook it slowly on medium heat
+👉 Taste and adjust seasoning
+👉 Add fresh herbs for better flavor`,
     };
 
     setMessages((prev) => [...prev, userMsg, aiMsg]);
@@ -38,22 +43,28 @@ Try cooking on medium heat and add seasoning for better taste!`
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
 
-      {/* TITLE */}
-      <Text style={styles.title}>{recipe.name} 🤖 AI Chef</Text>
+      {/* HEADER */}
+      <Text style={styles.title}>
+        🤖 AI Chef Assistant
+      </Text>
 
-      {/* CHAT AREA */}
+      <Text style={styles.subtitle}>
+        Cooking: {recipeName}
+      </Text>
+
+      {/* CHAT */}
       <ScrollView style={styles.chat}>
         {messages.map((msg, i) => (
           <View
             key={i}
             style={[
               styles.msg,
-              msg.role === "user" ? styles.user : styles.ai
+              msg.role === "user" ? styles.user : styles.ai,
             ]}
           >
-            <Text style={{ color: "white" }}>{msg.text}</Text>
+            <Text style={styles.msgText}>{msg.text}</Text>
           </View>
         ))}
       </ScrollView>
@@ -64,78 +75,101 @@ Try cooking on medium heat and add seasoning for better taste!`
           value={input}
           onChangeText={setInput}
           placeholder="Ask AI Chef..."
-          placeholderTextColor="#888"
+          placeholderTextColor="#64748b"
           style={styles.input}
         />
 
         <TouchableOpacity onPress={sendMessage} style={styles.button}>
-          <Text style={{ color: "black", fontWeight: "bold" }}>
-            Send
-          </Text>
+          <Text style={styles.buttonText}>Send</Text>
         </TouchableOpacity>
       </View>
 
-    </View>
+    </SafeAreaView>
   );
 }
+
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#0b0f14",
-    padding: 15
+    padding: 15,
   },
 
   title: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10
+    color: "#fff",
+    fontSize: 22,
+    fontWeight: "900",
+    textAlign: "center",
+    marginTop: 10,
+  },
+
+  subtitle: {
+    color: "#94a3b8",
+    textAlign: "center",
+    marginBottom: 10,
+    marginTop: 5,
   },
 
   chat: {
-    flex: 1
+    flex: 1,
+    marginTop: 10,
   },
 
   msg: {
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 10
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    maxWidth: "85%",
   },
 
   user: {
     backgroundColor: "#38bdf8",
-    alignSelf: "flex-end"
+    alignSelf: "flex-end",
   },
 
   ai: {
     backgroundColor: "#1f2937",
-    alignSelf: "flex-start"
+    alignSelf: "flex-start",
+  },
+
+  msgText: {
+    color: "white",
+    fontSize: 14,
+    lineHeight: 18,
   },
 
   inputBox: {
     flexDirection: "row",
     gap: 10,
-    alignItems: "center"
+    alignItems: "center",
+    paddingTop: 10,
   },
 
   input: {
     flex: 1,
-    backgroundColor: "#121826",
+    backgroundColor: "#111827",
     padding: 12,
-    borderRadius: 10,
-    color: "white"
+    borderRadius: 12,
+    color: "white",
   },
 
   button: {
     backgroundColor: "#38bdf8",
-    padding: 12,
-    borderRadius: 10
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+
+  buttonText: {
+    color: "#0b0f14",
+    fontWeight: "900",
   },
 
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#0b0f14"
-  }
+    backgroundColor: "#0b0f14",
+  },
 });

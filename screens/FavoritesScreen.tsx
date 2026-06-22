@@ -53,20 +53,26 @@ export default function FavoritesScreen({ navigation }: any) {
 
       {/* HEADER */}
       <View style={styles.header}>
-        <Text style={styles.title}>❤️ Favorites</Text>
+        <View>
+          <Text style={styles.brand}>PIC DISH</Text>
+          <Text style={styles.title}>Favorites</Text>
+        </View>
 
         <TouchableOpacity
-          style={styles.backBtn}
+          style={styles.homeBtn}
           onPress={() => navigation.navigate("Home")}
         >
-          <Text style={styles.back}>Home</Text>
+          <Text style={styles.homeText}>Home</Text>
         </TouchableOpacity>
       </View>
 
-      {/* EMPTY */}
+      {/* EMPTY STATE */}
       {favorites.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyText}>No saved recipes yet</Text>
+          <Text style={styles.emptySub}>
+            Start exploring and tap ❤️ to save meals
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -102,7 +108,10 @@ export default function FavoritesScreen({ navigation }: any) {
                     <Text style={styles.cookText}>🍳 Cook</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity onPress={() => handleRemove(item.id)}>
+                  <TouchableOpacity
+                    style={styles.removeBtn}
+                    onPress={() => handleRemove(item.id)}
+                  >
                     <Text style={styles.removeText}>Remove</Text>
                   </TouchableOpacity>
                 </View>
@@ -116,35 +125,81 @@ export default function FavoritesScreen({ navigation }: any) {
 }
 
 /* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000", paddingHorizontal: 15 },
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+    paddingHorizontal: 15,
+  },
 
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
+  },
 
+  /* HEADER */
   header: {
     marginTop: 20,
-    marginBottom: 12,
+    marginBottom: 15,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
   },
 
-  title: { color: "#fff", fontSize: 24, fontWeight: "800" },
+  brand: {
+    color: "#38bdf8",
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: 2,
+  },
 
-  backBtn: {
-    paddingVertical: 6,
+  title: {
+    color: "#fff",
+    fontSize: 26,
+    fontWeight: "900",
+  },
+
+  homeBtn: {
+    paddingVertical: 8,
     paddingHorizontal: 14,
-    borderRadius: 14,
+    borderRadius: 12,
+    backgroundColor: "rgba(56,189,248,0.15)",
     borderWidth: 1,
-    borderColor: "rgba(56,189,248,0.6)",
-    backgroundColor: "rgba(56,189,248,0.08)",
+    borderColor: "rgba(56,189,248,0.4)",
   },
 
-  back: { color: "#38bdf8", fontWeight: "700" },
+  homeText: {
+    color: "#38bdf8",
+    fontWeight: "700",
+  },
 
-  empty: { flex: 1, justifyContent: "center", alignItems: "center" },
-  emptyText: { color: "#888", fontSize: 16 },
+  /* EMPTY */
+  empty: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-  list: { paddingBottom: 30 },
+  emptyText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+
+  emptySub: {
+    color: "#888",
+    fontSize: 13,
+    marginTop: 6,
+    textAlign: "center",
+  },
+
+  /* LIST */
+  list: {
+    paddingBottom: 30,
+  },
 
   card: {
     width: width - 30,
@@ -155,15 +210,32 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
 
-  image: { width: "100%", height: 180 },
+  image: {
+    width: "100%",
+    height: 180,
+  },
 
-  content: { padding: 14 },
+  content: {
+    padding: 14,
+  },
 
-  name: { color: "#fff", fontSize: 20, fontWeight: "800" },
+  name: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "800",
+  },
 
-  meta: { color: "#cbd5e1", marginTop: 4, marginBottom: 12 },
+  meta: {
+    color: "#cbd5e1",
+    marginTop: 4,
+    marginBottom: 12,
+  },
 
-  row: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 
   cookBtn: {
     backgroundColor: "#38bdf8",
@@ -172,7 +244,22 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
 
-  cookText: { color: "#000", fontWeight: "800" },
+  cookText: {
+    color: "#000",
+    fontWeight: "900",
+  },
 
-  removeText: { color: "#ff4d4d", fontWeight: "700" },
+  removeBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#ff4d4d",
+    backgroundColor: "rgba(255,77,77,0.08)",
+  },
+
+  removeText: {
+    color: "#ff4d4d",
+    fontWeight: "800",
+  },
 });

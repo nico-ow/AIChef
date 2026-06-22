@@ -10,6 +10,8 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
@@ -47,7 +49,6 @@ export default function UploadScreen({ navigation }: any) {
 
     if (!result.canceled) {
       const asset = result.assets[0];
-
       setImageUri(asset.uri);
       setImageBase64(asset.base64 ?? null);
     }
@@ -80,12 +81,10 @@ export default function UploadScreen({ navigation }: any) {
       });
 
       const data = await res.json();
-      console.log("UPLOAD RESPONSE:", data);
 
       if (data.success) {
         Alert.alert("Success", "Recipe uploaded!");
 
-        // reset form
         setTitle("");
         setTime("");
         setDifficulty("");
@@ -94,12 +93,10 @@ export default function UploadScreen({ navigation }: any) {
         setImageUri(null);
         setImageBase64(null);
 
-        // 🚀 INSTANT REFRESH SIGNAL (NO goBack needed)
         navigation.navigate("Main", {
           screen: "Home",
           params: { refresh: Date.now() },
         });
-
       } else {
         Alert.alert("Upload failed", data.message || "Error");
       }
@@ -113,86 +110,157 @@ export default function UploadScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        <Text style={styles.header}>🍳 Upload Recipe</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Text style={styles.header}>🍳 Upload Recipe</Text>
+          <Text style={styles.subHeader}>
+            Share your best dish with the world
+          </Text>
 
-        {/* IMAGE */}
-        <TouchableOpacity style={styles.imageBox} onPress={pickImage}>
-          {imageUri ? (
-            <Image source={{ uri: imageUri }} style={styles.image} />
-          ) : (
-            <Text style={styles.placeholder}>Tap to select image</Text>
-          )}
-        </TouchableOpacity>
+          {/* IMAGE PICKER */}
+          <TouchableOpacity style={styles.imageBox} onPress={pickImage}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.image} />
+            ) : (
+              <Text style={styles.placeholder}>
+                Tap to select an image
+              </Text>
+            )}
+          </TouchableOpacity>
 
-        <TextInput placeholder="Title" style={styles.input} value={title} onChangeText={setTitle} />
-        <TextInput placeholder="Time" style={styles.input} value={time} onChangeText={setTime} />
-        <TextInput placeholder="Difficulty" style={styles.input} value={difficulty} onChangeText={setDifficulty} />
-        <TextInput placeholder="Ingredients" style={styles.input} value={ingredients} onChangeText={setIngredients} />
-        <TextInput placeholder="Instructions" style={styles.input} value={instructions} onChangeText={setInstructions} />
+          {/* INPUTS */}
+          <TextInput
+            placeholder="Recipe Title"
+            placeholderTextColor="#94a3b8"
+            style={styles.input}
+            value={title}
+            onChangeText={setTitle}
+          />
 
-        <TouchableOpacity style={styles.btn} onPress={handlePost} disabled={loading}>
-          {loading ? (
-            <ActivityIndicator color="#000" />
-          ) : (
-            <Text style={styles.btnText}>POST</Text>
-          )}
-        </TouchableOpacity>
-      </ScrollView>
+          <TextInput
+            placeholder="Cooking Time (e.g. 30 mins)"
+            placeholderTextColor="#94a3b8"
+            style={styles.input}
+            value={time}
+            onChangeText={setTime}
+          />
+
+          <TextInput
+            placeholder="Difficulty (Easy / Medium / Hard)"
+            placeholderTextColor="#94a3b8"
+            style={styles.input}
+            value={difficulty}
+            onChangeText={setDifficulty}
+          />
+
+          <TextInput
+            placeholder="Ingredients"
+            placeholderTextColor="#94a3b8"
+            style={[styles.input, styles.multi]}
+            value={ingredients}
+            onChangeText={setIngredients}
+            multiline
+          />
+
+          <TextInput
+            placeholder="Instructions"
+            placeholderTextColor="#94a3b8"
+            style={[styles.input, styles.multi]}
+            value={instructions}
+            onChangeText={setInstructions}
+            multiline
+          />
+
+          {/* BUTTON */}
+          <TouchableOpacity
+            style={styles.btn}
+            onPress={handlePost}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#0b0f14" />
+            ) : (
+              <Text style={styles.btnText}>POST RECIPE</Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000", padding: 20 },
+  container: {
+    flex: 1,
+    backgroundColor: "#0b0f14",
+    padding: 20,
+  },
 
   header: {
     color: "#fff",
-    fontSize: 26,
-    fontWeight: "800",
-    marginBottom: 15,
+    fontSize: 28,
+    fontWeight: "900",
+    textAlign: "center",
+    marginTop: 10,
+  },
+
+  subHeader: {
+    color: "#94a3b8",
+    textAlign: "center",
+    marginBottom: 20,
+    marginTop: 5,
   },
 
   imageBox: {
-    height: 180,
-    backgroundColor: "#111",
-    borderRadius: 15,
+    height: 200,
+    backgroundColor: "#111827",
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: "#222",
+    borderColor: "#1f2937",
   },
 
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 15,
+    borderRadius: 16,
   },
 
   placeholder: {
-    color: "#888",
+    color: "#64748b",
   },
 
   input: {
-    backgroundColor: "#111",
+    backgroundColor: "#111827",
     color: "#fff",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 10,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 12,
+    fontSize: 15,
+  },
+
+  multi: {
+    height: 90,
+    textAlignVertical: "top",
   },
 
   btn: {
     backgroundColor: "#38bdf8",
-    padding: 15,
-    borderRadius: 12,
+    padding: 16,
+    borderRadius: 14,
     marginTop: 10,
     alignItems: "center",
   },
 
   btnText: {
-    fontWeight: "800",
-    color: "#000",
+    fontWeight: "900",
+    fontSize: 16,
+    color: "#0b0f14",
   },
 });

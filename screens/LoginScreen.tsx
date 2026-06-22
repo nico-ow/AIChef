@@ -1,17 +1,18 @@
 import React from "react";
 import {
+  ActivityIndicator,
+  Alert,
+  Image,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  ActivityIndicator,
-  Alert,
+  View
 } from "react-native";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../types/navigation";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type LoginNav = NativeStackNavigationProp<
   RootStackParamList,
@@ -52,28 +53,14 @@ export default function LoginScreen({
 
       const data = await res.json();
 
-      console.log("LOGIN RESULT:", data);
-
       if (data.success) {
-        // 🔐 SAVE AUTH DATA
-        await AsyncStorage.setItem(
-          "user_id",
-          String(data.user.id)
-        );
-
-        await AsyncStorage.setItem(
-          "token",
-          String(data.user.token)
-        );
-
-        await AsyncStorage.setItem(
-          "username",
-          String(data.user.username)
-        );
+        await AsyncStorage.setItem("user_id", String(data.user.id));
+        await AsyncStorage.setItem("username", String(data.user.username));
+        await AsyncStorage.setItem("email", String(data.user.email));
 
         navigation.replace("Main");
       } else {
-        Alert.alert("Login Failed", data.message || "Try again");
+        Alert.alert("Login Failed", data.message || "Invalid credentials");
       }
     } catch (err) {
       console.log(err);
@@ -85,49 +72,64 @@ export default function LoginScreen({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>🍳</Text>
 
-      <Text style={styles.title}>AI Chef</Text>
+      {/* LOGO */}
+      <Image
+        source={require("../assets/Final.png")}
+        style={styles.logoImage}
+        resizeMode="contain"
+      />
 
+      {/* BRAND NAME */}
+      <Text style={styles.appName}>PIC DISH</Text>
+
+      {/* TAGLINE */}
       <Text style={styles.subtitle}>
-        Your personal cooking assistant
+        Discover • Cook • Share Delicious Recipes
       </Text>
 
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#94a3b8"
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-      />
+      {/* LOGIN CARD */}
+      <View style={styles.card}>
 
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor="#94a3b8"
-        secureTextEntry
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-      />
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor="#94a3b8"
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+        />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#0b0f14" />
-        ) : (
-          <Text style={styles.buttonText}>Login</Text>
-        )}
-      </TouchableOpacity>
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#94a3b8"
+          secureTextEntry
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+        />
 
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#000" />
+          ) : (
+            <Text style={styles.buttonText}>LOGIN</Text>
+          )}
+        </TouchableOpacity>
+
+      </View>
+
+      {/* REGISTER */}
       <TouchableOpacity
         onPress={() => navigation.navigate("Register")}
       >
-        <Text style={styles.link}>Create account</Text>
+        <Text style={styles.link}>Create new account</Text>
       </TouchableOpacity>
+
     </View>
   );
 }
@@ -139,35 +141,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#0b0f14",
     justifyContent: "center",
+    alignItems: "center",
     padding: 25,
   },
 
-  logo: {
-    fontSize: 60,
-    textAlign: "center",
+  logoImage: {
+    width: 110,
+    height: 110,
     marginBottom: 10,
   },
 
-  title: {
-    fontSize: 32,
-    color: "white",
-    textAlign: "center",
-    fontWeight: "bold",
+  /* 🔥 BRAND STYLE */
+  appName: {
+    fontSize: 34,
+    fontWeight: "900",
+    color: "#38bdf8",
+    letterSpacing: 2,
+    marginBottom: 5,
   },
 
   subtitle: {
     color: "#94a3b8",
     textAlign: "center",
-    marginBottom: 30,
+    marginBottom: 25,
+    fontSize: 14,
+  },
+
+  /* LOGIN CARD */
+  card: {
+    width: "100%",
+    backgroundColor: "#121826",
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
   },
 
   input: {
-    backgroundColor: "#121826",
+    backgroundColor: "#0b0f14",
     color: "white",
     padding: 15,
     borderRadius: 12,
     marginBottom: 12,
-    fontSize: 16,
+    fontSize: 15,
   },
 
   button: {
@@ -179,9 +197,10 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    fontWeight: "bold",
-    fontSize: 16,
+    fontWeight: "900",
+    fontSize: 15,
     color: "#0b0f14",
+    letterSpacing: 1,
   },
 
   link: {

@@ -32,20 +32,38 @@ export default function HomeScreen({ navigation }: any) {
   const showHeart = () => {
     Animated.sequence([
       Animated.parallel([
-        Animated.timing(scaleAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
-        Animated.timing(opacityAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
       ]),
       Animated.delay(300),
       Animated.parallel([
-        Animated.timing(scaleAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-        Animated.timing(opacityAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(scaleAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
       ]),
     ]).start();
   };
 
   const fetchRecipes = async () => {
     try {
-      const res = await fetch("http://192.168.254.110/AIChef/api/get_recipes.php");
+      const res = await fetch(
+        "http://192.168.254.110/AIChef/api/get_recipes.php"
+      );
       const data = await res.json();
       setRecipes(data || []);
     } catch (err) {
@@ -98,7 +116,7 @@ export default function HomeScreen({ navigation }: any) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      {/* HEART POPUP */}
+      {/* ❤️ HEART POPUP */}
       <Animated.View
         style={[
           styles.heartPopup,
@@ -111,15 +129,22 @@ export default function HomeScreen({ navigation }: any) {
         <Text style={{ fontSize: 80 }}>❤️</Text>
       </Animated.View>
 
-      {/* TOP BAR */}
+      {/* TOP BAR (UPGRADED BRAND STYLE) */}
       <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => navigation.navigate("Favorites")}>
-          <Text style={styles.favText}>❤️ Feeds</Text>
-        </TouchableOpacity>
+        
+        {/* BRAND */}
+        <Text style={styles.brand}>PIC DISH</Text>
 
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        {/* ACTIONS */}
+        <View style={styles.topActions}>
+          <TouchableOpacity onPress={() => navigation.navigate("Favorites")}>
+            <Text style={styles.favText}>❤️</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={handleLogout}>
+            <Text style={styles.logoutText}>⎋</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* FEED */}
@@ -135,7 +160,9 @@ export default function HomeScreen({ navigation }: any) {
           return (
             <Pressable onPress={() => handleTap(item)} style={styles.card}>
               <Image
-                source={{ uri: `http://192.168.254.110/AIChef/${item.image}` }}
+                source={{
+                  uri: `http://192.168.254.110/AIChef/${item.image}`,
+                }}
                 style={styles.image}
               />
 
@@ -157,10 +184,13 @@ export default function HomeScreen({ navigation }: any) {
 
                 <TouchableOpacity
                   onPress={() =>
-                    navigation.navigate("Recipe", { recipe: item, mode: "cook" })
+                    navigation.navigate("Recipe", {
+                      recipe: item,
+                      mode: "cook",
+                    })
                   }
                 >
-                  <Text style={{ fontSize: 22 }}>🥗</Text>
+                  <Text style={{ fontSize: 22 }}>🍳</Text>
                 </TouchableOpacity>
               </View>
             </Pressable>
@@ -172,29 +202,68 @@ export default function HomeScreen({ navigation }: any) {
 }
 
 /* ================= STYLES ================= */
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
-  loading: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#000" },
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
+  },
+
+  /* TOP BAR */
   topBar: {
     position: "absolute",
-    top: 60, 
+    top: 60,
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
+    alignItems: "center",
     zIndex: 10,
   },
 
-  favText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
-  logoutText: { color: "#fff", fontWeight: "bold" },
+  brand: {
+    color: "#38bdf8",
+    fontSize: 20,
+    fontWeight: "900",
+    letterSpacing: 2,
+  },
 
-  card: { width, height },
-  image: { width: "100%", height: "100%" },
+  topActions: {
+    flexDirection: "row",
+    gap: 18,
+  },
+
+  favText: {
+    color: "#fff",
+    fontSize: 22,
+  },
+
+  logoutText: {
+    color: "#fff",
+    fontSize: 22,
+  },
+
+  /* FEED */
+  card: {
+    width,
+    height,
+  },
+
+  image: {
+    width: "100%",
+    height: "100%",
+  },
 
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.2)",
+    backgroundColor: "rgba(0,0,0,0.25)",
   },
 
   content: {
@@ -203,14 +272,23 @@ const styles = StyleSheet.create({
     left: 20,
   },
 
-  title: { color: "#fff", fontSize: 30, fontWeight: "800" },
-  meta: { color: "#ddd", marginTop: 5 },
+  title: {
+    color: "#fff",
+    fontSize: 30,
+    fontWeight: "800",
+  },
+
+  meta: {
+    color: "#ddd",
+    marginTop: 5,
+  },
 
   actions: {
     position: "absolute",
     right: 20,
     bottom: 140,
     gap: 18,
+    alignItems: "center",
   },
 
   heartPopup: {
