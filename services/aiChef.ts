@@ -3,6 +3,10 @@ const MODEL = "gemini-2.5-flash";
 const API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
 export async function askGemini(prompt: string, context?: string) {
+  if (!API_KEY) {
+    return "⚠️ No Gemini API key configured. Please set EXPO_PUBLIC_GEMINI_API_KEY.";
+  }
+
   try {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,
